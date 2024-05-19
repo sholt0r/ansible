@@ -1,0 +1,4 @@
+- name: Initialize environment
+  hosts: localhost
+  connection: local
+  
