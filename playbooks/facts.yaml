@@ -1,0 +1,13 @@
+- name: Get Ansible Facts
+  hosts: localhost
+  become: true
+
+  gather_facts: true
+  gather_subset:
+    - "!all"
+    - "min"
+
+  tasks:
+    - name: Show Facts
+      debug:
+        msg: "{{ ansible_facts }}"

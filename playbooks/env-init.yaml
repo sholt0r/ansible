@@ -1,4 +1,38 @@
-- name: Initialize environment
+- name: System Setup
   hosts: localhost
-  connection: local
-  
+  become: true
+  vars:
+    user: 'jstaples'
+    dotfiles_repo: 'git@github.com/sholt0r/dotfiles.git'
+    ssh_key: '.ssh/id_ed25519'
+  tasks:
+    - name: '[Ubuntu] Install System Packages'
+      when: ansible_facts['os_family'] == 'Ubuntu'
+      ansible.builtin.apt:
+        name:
+          - build-essential
+          - clang
+          - curl
+          - eza
+          - gh
+          - git
+          - gzip
+          - python3
+          - python3-venv
+          - software-properties-common
+          - stow
+          - tshark
+          - unzip
+          - zsh
+        update_cache: true
+
+    - name: '[Ubuntu] Add Neovim Repo'
+      when: ansible_facts['os_family'] == 'Ubuntu'
+      ansible.builtin.apt_repository:
+        repo: 'ppa:neovim/stable'
+
+    - name: '[Ubuntu] Install Neovim'
+      when: ansible_facts['os_family'] == 'Ubuntu'
+      ansible.builtin.apt:
+        name: neovim
+        update_cache: true
