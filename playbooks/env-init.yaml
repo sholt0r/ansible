@@ -6,8 +6,7 @@
     dotfiles_repo: 'git@github.com/sholt0r/dotfiles.git'
     ssh_key: '.ssh/id_ed25519'
   tasks:
-    - name: '[Ubuntu] Install System Packages'
-      when: ansible_facts['os_family'] == 'Ubuntu'
+    - name: 'Install System Packages'
       ansible.builtin.apt:
         name:
           - build-essential
@@ -26,13 +25,22 @@
           - zsh
         update_cache: true
 
-    - name: '[Ubuntu] Add Neovim Repo'
-      when: ansible_facts['os_family'] == 'Ubuntu'
+    - name: 'Add Neovim Repo'
       ansible.builtin.apt_repository:
         repo: 'ppa:neovim/stable'
 
-    - name: '[Ubuntu] Install Neovim'
-      when: ansible_facts['os_family'] == 'Ubuntu'
+    - name: 'Install Neovim'
       ansible.builtin.apt:
         name: neovim
         update_cache: true
+
+    - name: 'Get dotfiles'
+      delegate_to: localhost
+      run_once: true
+      become: false
+      ansible.builtin.git:
+        repo: '{{ dotfiles_repo }}'
+        dest: '/home/{{ user }}/.dotfiles'
+        accept_hostkey: true
+        key_file: '/home/{{ user }}/{{ ssh_key }}'
+        force: true
