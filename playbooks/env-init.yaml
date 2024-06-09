@@ -74,8 +74,11 @@
     - name: 'Create .config dir'
       ansible.builtin.command: mkdir /home/{{ user }}/.config
 
-    - name: 'Add symlinks for .config'
-      ansible.builtin.command: stow /home/{{ user }}/.dotfiles/config -t /home/{{ user }}/.config
+    - name: 'Change Stow dir'
+      ansible.builtin.command: stow -d /home/{{user}}/.dotfiles
 
-    - name: 'Add symlinks for home'
-      ansible.builtin.command: stow /home/{{ user }}/.dotfiles/home -t /home/{{ user }}
+    - name: 'Stow config'
+      ansible.builtin.command: stow config -t /home/{{ user }}/.config
+
+    - name: 'Stow home'
+      ansible.builtin.command: stow home -t /home/{{ user }}
