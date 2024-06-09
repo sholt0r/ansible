@@ -48,8 +48,13 @@
           - neovim
         update_cache: true
 
-    - name: 'Install starship'
-      ansible.builtin.shell: https://starship.rs/install.sh
+    - name: 'Download Starship Installer'
+      ansible.builtin.get_url:
+        url: https://starship.rs/install.sh
+        dest: /tmp/starship.sh
+
+    - name: 'Install Starship'
+      ansible.builtin.shell: /tmp/starship.sh 
 
     - name: 'Get dotfiles'
       delegate_to: localhost
