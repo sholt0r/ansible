@@ -145,13 +145,24 @@
 
         - name: 'Install Go'
           ansible.builtin.copy:
-            src: '/tmp/go/bin/*'
-            dest: '/usr/local/bin/'
+            src: '/tmp/go/bin/go'
+            dest: '/usr/local/bin/go'
             owner: '{{ user }}'
             group: '{{ user }}'
             mode: '0755'
           tags:
             - go
+
+        - name: 'Install Gofmt'
+          ansible.builtin.copy:
+            src: '/tmp/go/bin/gofmt'
+            dest: '/usr/local/bin/gofmt'
+            owner: '{{ user }}'
+            group: '{{ user }}'
+            mode: '0755'
+          tags:
+            - go
+
 
     - name: 'Check Starship is installed'
       shell: command -v starship
