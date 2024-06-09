@@ -48,6 +48,9 @@
           - neovim
         update_cache: true
 
+    - name: 'Install starship'
+      ansible.builtin.command: curl -sS https://starship.rs/install.sh | sh
+
     - name: 'Get dotfiles'
       delegate_to: localhost
       run_once: true
@@ -58,4 +61,4 @@
         accept_hostkey: true
         key_file: '/home/{{ user }}/{{ ssh_key }}'
         force: true
-        update: no
+        update: false
