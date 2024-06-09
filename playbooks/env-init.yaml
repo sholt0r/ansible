@@ -53,6 +53,9 @@
         url: https://starship.rs/install.sh
         dest: /tmp/starship.sh
 
+    - name: 'Add execute permissions to Starship Install'
+      ansible.builtin.command: chmod a+x /tmp/starship.sh
+
     - name: 'Install Starship'
       ansible.builtin.shell: /tmp/starship.sh 
 
