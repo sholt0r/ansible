@@ -57,7 +57,7 @@
       ansible.builtin.command: chmod a+x /tmp/starship.sh
 
     - name: 'Install Starship'
-      ansible.builtin.shell: /tmp/starship.sh 
+      ansible.builtin.shell: /tmp/starship.sh -y
 
     - name: 'Get dotfiles'
       delegate_to: localhost
@@ -78,4 +78,4 @@
       ansible.builtin.command: stow /home/{{ user }}/.dotfiles/config -t /home/{{ user }}/.config
 
     - name: 'Add symlinks for home'
-      ansible.builtin.command: stow /home/{{ user }}/.dotfiles/home -t /home/{{ user }}/
+      ansible.builtin.command: stow /home/{{ user }}/.dotfiles/home -t /home/{{ user }}
