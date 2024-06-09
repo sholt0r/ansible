@@ -70,3 +70,12 @@
         key_file: '/home/{{ user }}/{{ ssh_key }}'
         force: true
         update: false
+
+    - name: 'Create .config dir'
+      ansible.builtin.command: mkdir /home/{{ user }}/.config
+
+    - name: 'Add symlinks for .config'
+      ansible.builtin.command: stow /home/{{ user }}/.dotfiles/config -t /home/{{ user }}/.config
+
+    - name: 'Add symlinks for home'
+      ansible.builtin.command: stow /home/{{ user }}/.dotfiles/home -t /home/{{ user }}/
