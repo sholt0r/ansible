@@ -85,7 +85,7 @@
             path: '{{ home }}/{{ ssh_key }}'
             type: ed25519
             state: present
-            register: ssh_key
+          register: ssh_key
           tags:
             - ssh_keys
 
