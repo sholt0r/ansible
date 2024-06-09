@@ -49,7 +49,7 @@
         update_cache: true
 
     - name: 'Install starship'
-      ansible.builtin.command: curl -sS https://starship.rs/install.sh | sh
+      ansible.builtin.shell: https://starship.rs/install.sh
 
     - name: 'Get dotfiles'
       delegate_to: localhost
