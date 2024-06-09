@@ -85,6 +85,7 @@
             path: '{{ home }}/{{ ssh_key }}'
             type: ed25519
             state: present
+            register: ssh_key
           tags:
             - ssh_keys
 
@@ -92,7 +93,7 @@
           ansible.builtin.pause:
             prompt: "
               Your SSH public key is: 
-              {{ lookup('ansible.builtin.file', '{{ home }}/{{ ssh_key }}.pub')}}
+              {{ ssh_key.public_key }}
 
               Please add this key to github before proceeding then press Enter"
           tags:
