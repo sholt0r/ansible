@@ -74,11 +74,8 @@
     - name: 'Create .config dir'
       ansible.builtin.command: mkdir /home/{{ user }}/.config
 
-    - name: 'Change Stow dir'
-      ansible.builtin.command: stow -d /home/{{user}}/.dotfiles
-
     - name: 'Stow config'
-      ansible.builtin.command: stow config -t /home/{{ user }}/.config
+      ansible.builtin.command: stow -d /home/{{user}}/.dotfiles config -t /home/{{ user }}/.config
 
     - name: 'Stow home'
-      ansible.builtin.command: stow home -t /home/{{ user }}
+      ansible.builtin.command: stow -d /home/{{user}}/.dotfiles home -t /home/{{ user }}
