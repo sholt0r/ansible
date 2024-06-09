@@ -139,33 +139,14 @@
           tags:
             - go
 
-        - name: 'Extract Go'
+        - name: 'Install Go'
           ansible.builtin.unarchive:
             src: '/tmp/go{{ go_version }}.linux-amd64.tar.gz'
-            dest: '/tmp/'
-          tags:
-            - go
-
-        - name: 'Install Go'
-          ansible.builtin.copy:
-            src: '/tmp/go/bin/go'
-            dest: '/usr/local/bin/go'
+            dest: '/usr/local/bin'
             owner: '{{ user }}'
             group: '{{ user }}'
-            mode: '0755'
           tags:
             - go
-
-        - name: 'Install Gofmt'
-          ansible.builtin.copy:
-            src: '/tmp/go/bin/gofmt'
-            dest: '/usr/local/bin/gofmt'
-            owner: '{{ user }}'
-            group: '{{ user }}'
-            mode: '0755'
-          tags:
-            - go
-
 
     - name: 'Check Starship is installed'
       shell: command -v starship
