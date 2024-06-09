@@ -90,6 +90,7 @@
             - ssh_keys
 
         - name: 'Pause to add keys to github' 
+          when: ssh_key.changed is true
           ansible.builtin.pause:
             prompt: "
               Your SSH public key is: 
