@@ -6,109 +6,220 @@
     dotfiles_repo: 'ssh://git@github.com/sholt0r/dotfiles.git'
     home: '/home/{{ user }}'
     ssh_key: '.ssh/id_ed25519'
+    go_version: '1.22.4'
   tasks:
-    - name: 'Install System Packages'
+    - name: 'Package Management'
+      block:
+        - name: 'Install System Packages'
+          become: true
+          ansible.builtin.apt:
+            name:
+              - build-essential
+              - clang
+              - curl
+              - gh
+              - gzip
+              - nodejs
+              - python3
+              - python3-venv
+              - software-properties-common
+              - stow
+              - tshark
+              - unzip
+              - zsh
+            update_cache: true
+          tags:
+            - packages
+
+        - name: 'Uninstall VIM'
+          become: true
+          ansible.builtin.apt:
+            name: vim
+            autoremove: true
+            state: absent
+          tags:
+        - packages
+
+        - name: 'Add EZA Key'
+          become: true
+          run_once: true
+          ansible.builtin.apt_key:
+            url: https://raw.githubusercontent.com/eza-community/eza/main/deb.asc
+            state: present
+            keyring: /etc/apt/keyrings/gierens.gpg
+          tags:
+            - eza
+
+        - name: 'Add EZA Repo'
+          become: true
+          ansible.builtin.apt_repository:
+            repo: 'deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main'
+            state: present
+          tags:
+            - eza
+
+        - name: 'Add Neovim Repo'
+          become: true
+          run_once: true
+          ansible.builtin.apt_repository:
+            repo: 'ppa:neovim-ppa/stable'
+          tags:
+            - neovim
+
+        - name: 'Install Neovim and EZA'
+          become: true
+          ansible.builtin.apt:
+            name:
+              - eza
+              - neovim
+            update_cache: true
+          tags:
+            - eza
+        - neovim
+
+    - name: 'SSH Key Management'
+      block:
+        - name: 'Generate SSH Keys'
+          community.crypto.openssh_keypair:
+            path: '{{ home }}/{{ ssh_key }}'
+            type: ed25519
+            state: present
+          tags:
+            - ssh_keys
+
+        - name: 'Pause to add keys to github' 
+          ansible.builtin.pause:
+            prompt: "
+              Your SSH public key is: 
+              {{ lookup('ansible.builtin.file', '{{ home }}/{{ ssh_key }}.pub')}}
+
+              Please add this key to github before proceeding then press Enter"
+          tags:
+            - ssh_keys
+
+    - name: 'Check Cargo is installed'
+      shell: command -v cargo
+      register: cargo_exists
+      ignore_errors: true
+
+    - name: 'Rust Package'
+      when: cargo_exists is failed
       become: true
-      ansible.builtin.apt:
-        name:
-          - build-essential
-          - clang
-          - curl
-          - gh
-          - gzip
-          - python3
-          - python3-venv
-          - software-properties-common
-          - stow
-          - tshark
-          - unzip
-          - zsh
-        update_cache: true
+      block:
+        - name: 'Download Rust Installer'
+          ansible.builtin.get_url:
+            url: 'https://sh.rustup.rs'
+            dest: '/tmp/sh.rustup.rs'
+            mode: '0755'
+          tags:
+            - rust
 
-    - name: 'Generate SSH Keys'
-      community.crypto.openssh_keypair:
-        path: '{{ home }}/{{ ssh_key }}'
-        type: ed25519
-        state: present
+        - name: 'Install Rust'
+          ansible.builtin.shell: /tmp/sh.rustup.rs -y
+          tags:
+            - rust
 
-    - name: 'Pause to add keys to github' 
-      ansible.builtin.pause:
-        prompt: "
-          Your SSH public key is: 
-          {{ lookup('ansible.builtin.file', '{{ home }}/{{ ssh_key }}.pub')}}
+    - name: 'Check Go is installed'
+      shell: command -v go
+      register: go_exists
+      ignore_errors: true
 
-          Please add this key to github before proceeding then press Enter"
-
-    - name: 'Add Neovim Repo'
+    - name: 'Go Package'
+      when: go_exists is failed
       become: true
-      run_once: true
-      ansible.builtin.apt_repository:
-        repo: 'ppa:neovim-ppa/stable'
+      block:
+        - name: 'Download Go'
+          ansible.builtin.get_url:
+            url: 'https://go.dev/dl/go{{ go_version }}.linux-amd64.tar.gz'
+            dest: '/tmp/go{{ go_version }}.linux-amd64.tar.gz'
+            mode: '0755'
+          tags:
+            - go
 
-    - name: 'Add EZA Key'
+        - name: 'Extract Go'
+          ansible.builtin.unarchive:
+            src: '/tmp/go{{ go_version }}.linux-amd64.tar.gz'
+            dest: '/tmp/'
+          tags:
+            - go
+
+        - name: 'Install Go'
+          ansible.builtin.copy:
+            src: '/tmp/go/bin/*'
+            dest: '/usr/local/bin/'
+            owner: '{{ user }}'
+            group: '{{ user }}'
+            mode: '0755'
+          tags:
+            - go
+
+    - name: 'Check Starship is installed'
+      shell: command -v starship
+      register: starship_exists
+      ignore_errors: true
+      tags:
+        - starship
+
+    - name: 'Starship Package'
+      when: starship_exists is failed
       become: true
-      run_once: true
-      ansible.builtin.apt_key:
-        url: https://raw.githubusercontent.com/eza-community/eza/main/deb.asc
-        state: present
-        keyring: /etc/apt/keyrings/gierens.gpg
+      block:
+        - name: 'Download Starship Installer'
+          ansible.builtin.get_url:
+            url: 'https://starship.rs/install.sh'
+            dest: '/tmp/starship.sh'
+            mode: '0755'
+          tags:
+            - starship
 
-    - name: 'Add EZA Repo'
+        - name: 'Install Starship'
+          ansible.builtin.shell: /tmp/starship.sh -y
+          tags:
+            - starship
+
+    - name: 'Dotfile Setup'
+      block:
+        - name: 'Get dotfiles'
+          delegate_to: localhost
+          run_once: true
+          ansible.builtin.git:
+            repo: '{{ dotfiles_repo }}'
+            dest: '{{ home }}/.dotfiles'
+            accept_hostkey: true
+            key_file: '{{ home }}/{{ ssh_key }}'
+            force: true
+            update: false
+          tags:
+            - dotfiles
+
+        - name: 'Create .config dir'
+          run_once: true
+          ansible.builtin.file:
+            path: '{{ home }}/.config'
+            state: directory
+            mode: '0775'
+          tags:
+            - dotfiles
+
+        - name: 'Stow config'
+          run_once: true
+          ansible.builtin.command: 'stow -d {{ home }}/.dotfiles config -t {{ home }}/.config'
+          tags:
+            - dotfiles
+
+        - name: 'Stow home'
+          run_once: true
+          ansible.builtin.command: 'stow -d {{ home }}/.dotfiles home -t {{ home }}'
+          tags:
+            - dotfiles
+
+    - name: 'Create vim symlink'
       become: true
-      ansible.builtin.apt_repository:
-        repo: 'deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main'
-        state: present
-
-    - name: 'Install Neovim and EZA'
-      become: true
-      ansible.builtin.apt:
-        name:
-          - eza
-          - neovim
-        update_cache: true
-
-    - name: 'Download Starship Installer'
-      become: true
-      run_once: true
-      ansible.builtin.get_url:
-        url: https://starship.rs/install.sh
-        dest: /tmp/starship.sh
-
-    - name: 'Add execute permissions to Starship Install'
-      become: true
-      run_once: true
-      ansible.builtin.command: chmod a+x /tmp/starship.sh
-
-    - name: 'Install Starship'
-      become: true
-      run_once: true
-      ansible.builtin.shell: /tmp/starship.sh -y
-
-    - name: 'Get dotfiles'
-      delegate_to: localhost
-      run_once: true
-      ansible.builtin.git:
-        repo: '{{ dotfiles_repo }}'
-        dest: '{{ home }}/.dotfiles'
-        accept_hostkey: true
-        key_file: '{{ home }}/{{ ssh_key }}'
-        force: true
-        update: false
-
-    - name: 'Create .config dir'
-      run_once: true
       ansible.builtin.file:
-        path: '{{ home }}/.config'
-        state: directory
-        mode: '0775'
-
-    - name: 'Stow config'
-      run_once: true
-      ansible.builtin.command: 'stow -d {{ home }}/.dotfiles config -t {{ home }}/.config'
-
-    - name: 'Stow home'
-      run_once: true
-      ansible.builtin.command: 'stow -d {{ home }}/.dotfiles home -t {{ home }}'
+        src: '/usr/bin/nvim'
+        dest: '/usr/local/bin/vim'
+        owner: root
+        group: root
 
     - name: 'Change shell to zsh'
       become: true
