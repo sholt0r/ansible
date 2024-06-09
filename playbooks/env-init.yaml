@@ -54,16 +54,19 @@
 
     - name: 'Download Starship Installer'
       become: true
+      run_once: true
       ansible.builtin.get_url:
         url: https://starship.rs/install.sh
         dest: /tmp/starship.sh
 
     - name: 'Add execute permissions to Starship Install'
       become: true
+      run_once: true
       ansible.builtin.command: chmod a+x /tmp/starship.sh
 
     - name: 'Install Starship'
       become: true
+      run_once: true
       ansible.builtin.shell: /tmp/starship.sh -y
 
     - name: 'Get dotfiles'
@@ -78,16 +81,20 @@
         update: false
 
     - name: 'Create .config dir'
+      run_once: true
       ansible.builtin.file:
         path: /home/{{ user }}/.config
         state: directory
         mode: '0775'
 
     - name: 'Stow config'
+      run_once: true
       ansible.builtin.command: stow -d /home/{{user}}/.dotfiles config -t /home/{{ user }}/.config
 
     - name: 'Stow home'
+      run_once: true
       ansible.builtin.command: stow -d /home/{{user}}/.dotfiles home -t /home/{{ user }}
 
     - name: 'Change shell to zsh'
+      run_once: true
       ansible.builtin.command: chsh -s /usr/bin/zsh {{ user }}
