@@ -38,7 +38,7 @@
             autoremove: true
             state: absent
           tags:
-        - packages
+            - packages
 
         - name: 'Add EZA Key'
           become: true
@@ -75,7 +75,7 @@
             update_cache: true
           tags:
             - eza
-        - neovim
+            - neovim
 
     - name: 'SSH Key Management'
       block:
