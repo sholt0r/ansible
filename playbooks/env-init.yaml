@@ -4,6 +4,7 @@
   vars:
     user: 'jstaples'
     dotfiles_repo: 'ssh://git@github.com/sholt0r/dotfiles.git'
+    home: '/home/{{ user }}'
     ssh_key: '.ssh/id_ed25519'
   tasks:
     - name: 'Install System Packages'
@@ -23,6 +24,14 @@
           - unzip
           - zsh
         update_cache: true
+
+    - name: 'Generate SSH Keys'
+      community.crypto.openssh_keypair:
+        path: '{{ home }}/{{ ssh_key }}'
+
+    - name: 'Pause to add keys to github' 
+      ansible.builtin.pause:
+        prompt: "Your SSH public key is: \n{{ lookup('ansible.builtin.file', '{{ home }}/{{ ssh_key }}.pub')}}\n Please add this key to github before proceeding then press Enter."
 
     - name: 'Add Neovim Repo'
       become: true
@@ -74,26 +83,26 @@
       run_once: true
       ansible.builtin.git:
         repo: '{{ dotfiles_repo }}'
-        dest: '/home/{{ user }}/.dotfiles'
+        dest: '{{ home }}/.dotfiles'
         accept_hostkey: true
-        key_file: '/home/{{ user }}/{{ ssh_key }}'
+        key_file: '{{ home }}/{{ ssh_key }}'
         force: true
         update: false
 
     - name: 'Create .config dir'
       run_once: true
       ansible.builtin.file:
-        path: /home/{{ user }}/.config
+        path: '{{ home }}/.config'
         state: directory
         mode: '0775'
 
     - name: 'Stow config'
       run_once: true
-      ansible.builtin.command: stow -d /home/{{user}}/.dotfiles config -t /home/{{ user }}/.config
+      ansible.builtin.command: 'stow -d {{ home }}/.dotfiles config -t {{ home }}/.config'
 
     - name: 'Stow home'
       run_once: true
-      ansible.builtin.command: stow -d /home/{{user}}/.dotfiles home -t /home/{{ user }}
+      ansible.builtin.command: 'stow -d {{ home }}/.dotfiles home -t {{ home }}'
 
     - name: 'Change shell to zsh'
       become: true
