@@ -1,4 +1,4 @@
-- name: System Setup
+- name: 'System Setup'
   hosts: 127.0.0.1
   connection: local
   vars:
@@ -28,10 +28,16 @@
     - name: 'Generate SSH Keys'
       community.crypto.openssh_keypair:
         path: '{{ home }}/{{ ssh_key }}'
+        type: ed25519
+        state: present
 
     - name: 'Pause to add keys to github' 
       ansible.builtin.pause:
-        prompt: "Your SSH public key is: \n{{ lookup('ansible.builtin.file', '{{ home }}/{{ ssh_key }}.pub')}}\n Please add this key to github before proceeding then press Enter."
+        prompt: "
+          Your SSH public key is: 
+          {{ lookup('ansible.builtin.file', '{{ home }}/{{ ssh_key }}.pub')}}
+
+          Please add this key to github before proceeding then press Enter"
 
     - name: 'Add Neovim Repo'
       become: true
@@ -107,4 +113,6 @@
     - name: 'Change shell to zsh'
       become: true
       run_once: true
-      ansible.builtin.command: chsh -s /usr/bin/zsh {{ user }}
+      ansible.builtin.user:
+        name: '{{ user }}'
+        shell: '/usr/bin/zsh'
