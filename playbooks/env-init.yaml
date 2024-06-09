@@ -96,5 +96,6 @@
       ansible.builtin.command: stow -d /home/{{user}}/.dotfiles home -t /home/{{ user }}
 
     - name: 'Change shell to zsh'
+      become: true
       run_once: true
       ansible.builtin.command: chsh -s /usr/bin/zsh {{ user }}
