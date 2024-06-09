@@ -6,6 +6,23 @@
     dotfiles_repo: 'git@github.com/sholt0r/dotfiles.git'
     ssh_key: '.ssh/id_ed25519'
   tasks:
+    - name: 'Add Neovim Repo'
+      run_once: true
+      ansible.builtin.apt_repository:
+        repo: 'ppa:neovim/stable'
+
+    - name: 'Add EZA Key'
+      run_once: true
+      ansible.builtin.apt_key:
+        url: https://raw.githubusercontent.com/eza-community/eza/main/deb.asc
+        state: present
+        keyring: /etc/apt/keyrings/gierens.gpg
+
+    - name: 'Add EZA Repo'
+      ansible.builtin.apt_repository:
+        repo: 'deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main'
+        state: present
+
     - name: 'Install System Packages'
       ansible.builtin.apt:
         name:
@@ -14,8 +31,8 @@
           - curl
           - eza
           - gh
-          - git
           - gzip
+          - neovim
           - python3
           - python3-venv
           - software-properties-common
@@ -23,15 +40,6 @@
           - tshark
           - unzip
           - zsh
-        update_cache: true
-
-    - name: 'Add Neovim Repo'
-      ansible.builtin.apt_repository:
-        repo: 'ppa:neovim/stable'
-
-    - name: 'Install Neovim'
-      ansible.builtin.apt:
-        name: neovim
         update_cache: true
 
     - name: 'Get dotfiles'
