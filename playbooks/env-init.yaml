@@ -104,9 +104,9 @@
 
     - name: 'Rust Package'
       when: cargo_exists is failed
-      become: true
       block:
         - name: 'Download Rust Installer'
+          become: true
           ansible.builtin.get_url:
             url: 'https://sh.rustup.rs'
             dest: '/tmp/sh.rustup.rs'
