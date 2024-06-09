@@ -29,6 +29,7 @@
               - unzip
               - zsh
             update_cache: true
+            state: present
           tags:
             - packages
 
@@ -64,6 +65,7 @@
           run_once: true
           ansible.builtin.apt_repository:
             repo: 'ppa:neovim-ppa/stable'
+            state: present
           tags:
             - neovim
 
@@ -74,6 +76,7 @@
               - eza
               - neovim
             update_cache: true
+            state: present
           tags:
             - eza
             - neovim
