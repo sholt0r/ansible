@@ -46,6 +46,7 @@
         name:
           - eza
           - neovim
+        update_cache: true
 
     - name: 'Get dotfiles'
       delegate_to: localhost
@@ -57,3 +58,4 @@
         accept_hostkey: true
         key_file: '/home/{{ user }}/{{ ssh_key }}'
         force: true
+        update: no
