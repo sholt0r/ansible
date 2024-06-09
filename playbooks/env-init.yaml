@@ -231,6 +231,7 @@
         dest: '/usr/local/bin/vim'
         owner: root
         group: root
+        state: link
 
     - name: 'Change shell to zsh'
       become: true
